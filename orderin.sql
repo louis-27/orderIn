@@ -8,20 +8,14 @@ CREATE TABLE `Staff` (
   `Password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `Driver` (
-  `Id` int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `Name` varchar(255) NOT NULL,
-  `Gender` varchar(6) NOT NULL,
-  `Phone` varchar(25) NOT NULL,
-  `Status` varchar(15) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 CREATE TABLE `Customer` (
   `Id` int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `Name` varchar(255) NOT NULL,
   `Gender` varchar(6) NOT NULL,
   `Phone` varchar(50) NOT NULL,
-  `Address` varchar(255) NOT NULL
+  `Address` varchar(255) NOT NULL,
+  `Email` varchar(50) NOT NULL,
+  `Password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `Product` (
@@ -39,14 +33,8 @@ CREATE TABLE `ProductCategory` (
 CREATE TABLE `OrderHeader` (
   `Id` int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `CustomerId` int(11),
-  `Status` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE `OrderDetail` (
-  `HeaderId` int(11),
   `ProductId` int(11),
-  `Quantity` int(11) NOT NULL,
-  PRIMARY KEY (`HeaderId`, `ProductId`)
+  `Quantity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Add foreign keys after creating tables (sehingga urutan table dalam create table tidak menjadi masalah. Contoh: Jika foreign key dibuat pada create table, maka dengan urutan di atas akan terjadi error yang di mana field `CategoryId` pada table `Product` mereferensikan table `ProductCategory` padahal table `ProductCategory` belum dibuat akibat dari urutan table `ProductCategory` yg di-create setelah table `Product`)
@@ -54,10 +42,7 @@ ALTER TABLE `Product`
 ADD FOREIGN KEY (`CategoryId`) REFERENCES ProductCategory(Id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `OrderHeader`
-ADD FOREIGN KEY (`CustomerId`) REFERENCES Customer(Id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE `OrderDetail`
-ADD FOREIGN KEY (`HeaderId`) REFERENCES OrderHeader(Id) ON UPDATE CASCADE ON DELETE CASCADE,
+ADD FOREIGN KEY (`CustomerId`) REFERENCES Customer(Id) ON UPDATE CASCADE ON DELETE CASCADE,
 ADD FOREIGN KEY (`ProductId`) REFERENCES Product(Id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
@@ -65,10 +50,8 @@ ADD FOREIGN KEY (`ProductId`) REFERENCES Product(Id) ON UPDATE CASCADE ON DELETE
 INSERT INTO `Staff` (`Name`, `Gender`, `Phone`, `Email`, `Password`) VALUES
 ('John Doe', 'Male', '081299001122', 'johndoe@gmail.com', 'johndoe123');
 
-INSERT INTO `Driver` (`Name`, `Gender`, `Phone`, `Status`) VALUES
-('Budi', 'Male', '082333471521', 'Available'),
-('Cecep', 'Male', '082333471522', 'Available'),
-('Dodi', 'Male', '082333471523', 'Available');
+INSERT INTO `Customer` (`Name`, `Gender`, `Phone`, `Address`, `Email`, `Password`) VALUES
+('Louis', 'Male', '081267998880', 'Jl. Jalan hehe', 'louis@gmail.com', 'louis999');
 
 INSERT INTO `ProductCategory` VALUES
 ('1', 'Food'),

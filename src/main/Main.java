@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import db.Connect;
+import factory.OrderFactory;
 import factory.ProductFactory;
+import model.Order;
 import model.Product;
+import repository.OrderRepository;
 import repository.ProductRepository;
 import repository.UserRepository;
 
@@ -24,16 +27,15 @@ public class Main {
 			utils.orderInScreen();
 			
 			System.out.println("1. Customer");
-			System.out.println("2. Driver");
-			System.out.println("3. Admin");
-			System.out.println("4. Exit");
+			System.out.println("2. Admin");
+			System.out.println("3. Exit");
 			
 			int inp;
 			do {				
 				System.out.print("Continue as: ");
 				inp = scan.nextInt();
 				scan.nextLine();
-			} while (!(inp >= 1 && inp <= 4));
+			} while (!(inp >= 1 && inp <= 3));
 			
 			utils.clearScreen();
 			switch (inp) {
@@ -41,12 +43,9 @@ public class Main {
 					customerMenu();
 					break;
 				case 2:
-					driverMenu();
-					break;
-				case 3:
 					adminMenu();
 					break;
-				case 4:
+				case 3:
 					utils.orderInScreen();
 					isRunning = false;
 					break;
@@ -54,12 +53,11 @@ public class Main {
 
 		}
 	}
-
-	
 	
 	// Admin
 	public void adminMenu() {
-		if (!adminLogin()) return;
+		Integer userLogin = login("Staff");
+		if (userLogin == -1) return;
 		
 		boolean isRunning = true;
 		while (isRunning) {
@@ -93,8 +91,9 @@ public class Main {
 		}
 	}
 	
-	public boolean adminLogin() {
+	public Integer login(String userType) {
 		String email, password, cancel;
+		Integer userLogin = -1;
 		do {
 			System.out.print("\nEmail: ");
 			email = scan.nextLine();
@@ -102,21 +101,23 @@ public class Main {
 			System.out.print("\nPassword: ");
 			password = scan.nextLine();
 			
-			if (!UserRepository.login(email, password)) {
+			userLogin = UserRepository.login(userType, email, password);
+			
+			if (userLogin == -1) {
 				do {
 					System.out.print("Incorrect user credentials. Do you want to go back? [Yes | No] ");
 					cancel = scan.nextLine();
 					
 					if (cancel.equalsIgnoreCase("Yes")) {
-						return false;
+						return -1;
 					} else if (cancel.equalsIgnoreCase("No")) {
 						break;
 					}
 				} while (!(cancel.equalsIgnoreCase("Yes") || cancel.equalsIgnoreCase("No")));
 			}
-		} while (!UserRepository.login(email, password));
+		} while (userLogin == -1);
 		
-		return true;
+		return userLogin;
 	}
 	
 	public void printMenu() {
@@ -191,47 +192,69 @@ public class Main {
 		System.out.println("Successfully removed from menu");
 		utils.waitUser();
 	}
-
-	
-	
-	// Driver
-	public void driverMenu() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
 	
 	// Customer
 	public void customerMenu() {
+		Integer userLogin = login("Customer");
+		if (userLogin == -1) return;
+
 		boolean isRunning = true;
 		
 		while (isRunning) {
 			utils.clearScreen();
 			
-			printOrders();
-			
 			System.out.println("Welcome! What do you want to do?");
 			System.out.println("1. Add Order");
-			System.out.println("2. Cancel Order");
-			System.out.println("3. Exit");
+			System.out.println("2. Go Back");
 			
 			int inp;
 			do {
 				System.out.print("Choose: ");
 				inp = scan.nextInt();
 				scan.nextLine();
-			} while (!(inp >= 1 && inp <= 3));
+			} while (!(inp >= 1 && inp <= 2));
 			
 			utils.clearScreen();
 			switch (inp) {
 				case 1:
-//					addOrder();
+					addOrder(userLogin);
 					break;
 				case 2:
-//					cancelOrder();
+					isRunning = false;
 					break;
-				case 3:
+			}
+		}
+	}
+	
+	public void addOrder(Integer userLogin) {
+		if (ProductRepository.isEmpty()) {
+			System.out.println("There are no food. Try again later maybe ;)");
+			utils.waitUser();
+			return;
+		}
+		
+		boolean isRunning = true;
+		while (isRunning) {
+			utils.clearScreen();
+			
+			printMenu();
+			
+			System.out.println("1. Place Order");
+			System.out.println("2. Go Back");
+			
+			int inp;
+			do {
+				System.out.print("Choose: ");
+				inp = scan.nextInt();
+				scan.nextLine();
+			} while (!(inp >= 1 && inp <= 2));
+			
+			utils.clearScreen();
+			switch (inp) {
+				case 1:
+					placeOrder(userLogin);
+					break;
+				case 2:
 					isRunning = false;
 					break;
 			}
@@ -239,8 +262,31 @@ public class Main {
 
 	}
 	
-	public void printOrders() {
+	public void placeOrder(Integer userLogin) {
+		ArrayList<Product> menu = ProductRepository.select();
+
+		printMenu();
 		
+		int foodNumber, qty;
+		
+		do {
+			System.out.printf("Add Food Number [1 - %d]: ", menu.size());
+			foodNumber = scan.nextInt();
+			scan.nextLine();
+		} while (!(foodNumber >= 1 && foodNumber <= menu.size()));
+		
+		do {
+			System.out.print("Quantity: x ");
+			qty = scan.nextInt();
+			scan.nextLine();
+		} while (!(qty > 0));
+		
+		Product chosen = menu.get(foodNumber - 1);
+		Order order = OrderFactory.newOrder(null, userLogin, chosen.getId(), qty);
+		OrderRepository.insert(order);
+		
+		System.out.println("Order placed!");
+		utils.waitUser();
 	}
 
 	public static void main(String[] args) {

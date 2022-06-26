@@ -40,6 +40,29 @@ public class ProductRepository {
 		return result;
 	}
 	
+	public static Product selectById(Integer id) {
+		Product result = null;
+		
+		String query = String.format("SELECT * FROM `Product` WHERE id = '%d'", id);
+		ResultSet rs = conn.executeQuery(query);
+		
+		try {
+			if (rs.next() == true) {
+				Integer productId = Integer.parseInt(rs.getString("id"));
+				Integer productCategoryId = Integer.parseInt(rs.getString("categoryId"));
+				String productName = rs.getString("name");
+				Integer productPrice = Integer.parseInt(rs.getString("price"));
+				
+				result = ProductFactory.newProduct(productId, productCategoryId, productName, productPrice);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
+	
 	public static void insert(Product product) {
 		Integer categoryId = null;
 		
@@ -58,6 +81,22 @@ public class ProductRepository {
 		String query = String.format("DELETE FROM `Product` WHERE `Name` = '%s'", product.getName());
 		
 		conn.executeUpdate(query);
+	}
+	
+	public static boolean isEmpty() {
+		String query = "SELECT id FROM `Product` ORDER BY id DESC LIMIT 1";
+		ResultSet rs = conn.executeQuery(query);
+		
+		try {
+			if (rs.next() == true) {
+				return false;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return true;
 	}
 
 }
